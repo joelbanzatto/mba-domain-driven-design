@@ -100,3 +100,10 @@ Content-Type: application/json
     "spot_id": "96298e63-5a38-4352-b97d-322259f10921",
     "card_token": "tok_visa"
 }
+
+###
+@order_id = 00000000-0000-0000-0000-000000000001
+
+### Cancela um pedido: dispara OrderCancelled e toda a cadeia de reações
+POST http://localhost:3000/events/{{event_id}}/orders/{{order_id}}/cancel
+Content-Type: application/json

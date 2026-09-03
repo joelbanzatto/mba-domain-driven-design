@@ -109,6 +109,7 @@ import { PartnerCreatedIntegrationEvent } from '../@core/events/domain/events/in
         spotReservationRepo,
         uow,
         paymentGateway,
+        applicationService,
       ) =>
         new OrderService(
           orderRepo,
@@ -117,6 +118,7 @@ import { PartnerCreatedIntegrationEvent } from '../@core/events/domain/events/in
           spotReservationRepo,
           uow,
           paymentGateway,
+          applicationService,
         ),
       inject: [
         'IOrderRepository',
@@ -125,6 +127,7 @@ import { PartnerCreatedIntegrationEvent } from '../@core/events/domain/events/in
         'ISpotReservationRepository',
         'IUnitOfWork',
         PaymentGateway,
+        ApplicationService,
       ],
     },
     {
