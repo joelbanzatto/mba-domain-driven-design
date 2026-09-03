@@ -8,6 +8,8 @@ import {
   OrderSchema,
   PartnerSchema,
   SpotReservationSchema,
+  WaitingListSchema,
+  WaitingListEntrySchema,
 } from '../@core/events/infra/db/schemas';
 import { PartnerMysqlRepository } from '../@core/events/infra/db/repositories/partner-mysql.repository';
 import { EntityManager } from '@mikro-orm/mysql';
@@ -15,10 +17,12 @@ import { CustomerMysqlRepository } from '../@core/events/infra/db/repositories/c
 import { EventMysqlRepository } from '../@core/events/infra/db/repositories/event-mysql.repository';
 import { OrderMysqlRepository } from '../@core/events/infra/db/repositories/order-mysql.repository';
 import { SpotReservationMysqlRepository } from '../@core/events/infra/db/repositories/spot-reservation-mysql.repository';
+import { WaitingListMysqlRepository } from '../@core/events/infra/db/repositories/waiting-list-mysql.repository';
 import { PartnerService } from '../@core/events/application/partner.service';
 import { CustomerService } from '../@core/events/application/customer.service';
 import { EventService } from '../@core/events/application/event.service';
 import { OrderService } from '../@core/events/application/order.service';
+import { WaitingListService } from '../@core/events/application/waiting-list.service';
 import { PaymentGateway } from '../@core/events/application/payment.gateway';
 import { IPartnerRepository } from '../@core/events/domain/repositories/partner-repository.interface';
 import { PartnersController } from './partners/partners.controller';
@@ -27,6 +31,7 @@ import { EventsController } from './events/events.controller';
 import { EventSectionsController } from './events/event-sections.controller';
 import { EventSpotsController } from './events/event-spots.controller';
 import { OrdersController } from './orders/orders.controller';
+import { WaitingListController } from './waiting-list/waiting-list.controller';
 import { ApplicationModule } from '../application/application.module';
 import { ApplicationService } from '../@core/common/application/application.service';
 import { DomainEventManager } from '../@core/common/domain/domain-event-manager';
@@ -35,6 +40,7 @@ import { MyHandlerHandler } from '../@core/events/application/handlers/my-handle
 import { OrderCancelledHandler } from '../@core/events/application/handlers/order-cancelled.handler';
 import { IEventRepository } from '../@core/events/domain/repositories/event-repository.interface';
 import { ISpotReservationRepository } from '../@core/events/domain/repositories/spot-reservation-repository.interface';
+import { IWaitingListRepository } from '../@core/events/domain/repositories/waiting-list-repository.interface';
 import { ModuleRef } from '@nestjs/core';
 import { BullModule, InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
@@ -51,6 +57,8 @@ import { PartnerCreatedIntegrationEvent } from '../@core/events/domain/events/in
       EventSpotSchema,
       OrderSchema,
       SpotReservationSchema,
+      WaitingListSchema,
+      WaitingListEntrySchema,
     ]),
     ApplicationModule,
     BullModule.registerQueue({
@@ -81,6 +89,11 @@ import { PartnerCreatedIntegrationEvent } from '../@core/events/domain/events/in
     {
       provide: 'ISpotReservationRepository',
       useFactory: (em: EntityManager) => new SpotReservationMysqlRepository(em),
+      inject: [EntityManager],
+    },
+    {
+      provide: 'IWaitingListRepository',
+      useFactory: (em: EntityManager) => new WaitingListMysqlRepository(em),
       inject: [EntityManager],
     },
     {
@@ -142,6 +155,27 @@ import { PartnerCreatedIntegrationEvent } from '../@core/events/domain/events/in
       inject: ['IPartnerRepository', DomainEventManager],
     },
     {
+      provide: WaitingListService,
+      useFactory: (
+        customerRepo: any,
+        eventRepo: IEventRepository,
+        waitingListRepo: IWaitingListRepository,
+        applicationService: ApplicationService,
+      ) =>
+        new WaitingListService(
+          customerRepo,
+          eventRepo,
+          waitingListRepo,
+          applicationService,
+        ),
+      inject: [
+        'ICustomerRepository',
+        'IEventRepository',
+        'IWaitingListRepository',
+        ApplicationService,
+      ],
+    },
+    {
       provide: OrderCancelledHandler,
       useFactory: (
         eventRepo: IEventRepository,
@@ -167,6 +201,7 @@ import { PartnerCreatedIntegrationEvent } from '../@core/events/domain/events/in
     EventSectionsController,
     EventSpotsController,
     OrdersController,
+    WaitingListController,
   ],
 })
 export class EventsModule implements OnModuleInit {

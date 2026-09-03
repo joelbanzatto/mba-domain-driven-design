@@ -107,3 +107,14 @@ Content-Type: application/json
 ### Cancela um pedido: dispara OrderCancelled e toda a cadeia de reações
 POST http://localhost:3000/events/{{event_id}}/orders/{{order_id}}/cancel
 Content-Type: application/json
+
+### Entra na lista de espera de uma seção esgotada
+POST http://localhost:3000/events/{{event_id}}/sections/{{section_id}}/waiting-list
+Content-Type: application/json
+
+{
+    "customer_id": "{{customer_id}}"
+}
+
+### Consulta a fila da seção (entradas na ordem de chegada, com status)
+GET http://localhost:3000/events/{{event_id}}/sections/{{section_id}}/waiting-list
